@@ -25,5 +25,8 @@ class Config:
     # 웹 서버 구동 포트 설정
     PORT = 5000
     
+    # Flask 디버그 모드 설정 (실제 배포 시에는 보안을 위해 False 권장)
+    DEBUG = False
+    
     # 자동 로그인 세션 만료 기간 (30일)
     PERMANENT_SESSION_LIFETIME = 2592000

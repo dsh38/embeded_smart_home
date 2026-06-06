@@ -17,7 +17,7 @@ app = Flask(__name__,
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 app.config.from_object(Config)
-app.debug = True
+app.debug = Config.DEBUG
 
 # 데이터 디렉토리 및 초기 설정 파일 로드
 AuthModel.initialize_config()
@@ -194,4 +194,4 @@ if __name__ == '__main__':
         print("🚀 [I2C LCD] 백그라운드 LCD 롤링 데몬 스레드가 활성화되었습니다.")
         
     # 0.0.0.0 호스트로 실행하여 동일 네트워크상의 모바일/PC에서 접속 가능하도록 설정
-    app.run(host='0.0.0.0', port=Config.PORT, debug=True)
+    app.run(host='0.0.0.0', port=Config.PORT, debug=app.debug)
