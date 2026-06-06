@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트홈 IoT 제어 시스템</title>
+    <!-- Google Fonts 로드 (Outfit, Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 아이콘 로드 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 메인 스타일시트 연동 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        // 초기 테마 동기화 (렌더링 전 깜빡임 현상 방지)
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 상단 헤더 영역 -->
+        <header class="app-header">
+            <div class="header-logo" onclick="window.location.href='/'" style="cursor:pointer;">
+                <i class="fa-solid fa-house-chimney-window logo-icon"></i>
+                <span class="logo-text">SmartHome IoT</span>
+            </div>
+            {% if session.get('logged_in') %}
+            <!-- 드롭다운 계정메뉴 구성 -->
+            <div class="my-account-dropdown">
+                <button id="btn-dropdown-toggle" class="dropdown-toggle">
+                    <i class="fa-regular fa-circle-user" style="font-size: 1.1rem;"></i>
+                    <span>내 계정: <strong>{{ session.get('username') }}</strong></span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+                </button>
+                <div id="dropdown-menu-list" class="dropdown-menu">
+                    <button id="btn-change-credentials" class="dropdown-item">
+                        <i class="fa-solid fa-user-gear"></i> 계정 정보 변경
+                    </button>
+                    <button id="btn-dropdown-logout" class="dropdown-item danger-item">
+                        <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </header>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="app-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- 하단 네비게이션 및 테마 전환 영역 -->
+        <footer class="app-footer">
+            <div class="theme-switch-container">
+                <span class="theme-label"><i class="fa-solid fa-palette"></i> 테마 설정</span>
+                <div class="theme-toggle-wrapper">
+                    <button id="theme-btn-light" class="theme-toggle-btn active" onclick="setTheme('light')">
+                        <i class="fa-solid fa-sun"></i> 화이트
+                    </button>
+                    <button id="theme-btn-dark" class="theme-toggle-btn" onclick="setTheme('dark')">
+                        <i class="fa-solid fa-moon"></i> 다크
+                    </button>
+                </div>
+            </div>
+            <div class="footer-info">
+                <p>&copy; 2026 SmartHome IoT System.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 로그아웃, 테마, 드롭다운 공통 핸들링 스크립트 -->
+    <script>
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('theme-btn-dark').classList.add('active');
+                document.getElementById('theme-btn-light').classList.remove('active');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('theme-btn-light').classList.add('active');
+                document.getElementById('theme-btn-dark').classList.remove('active');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // 테마 초기 로딩 반영
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+
+            // 1. 드롭다운 토글 제어
+            const dropdownToggle = document.getElementById('btn-dropdown-toggle');
+            const dropdownMenu = document.getElementById('dropdown-menu-list');
+
+            if (dropdownToggle && dropdownMenu) {
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+
+                // 드롭다운 바깥 클릭 시 메뉴 닫기
+                document.addEventListener('click', (e) => {
+                    if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // 2. 로그아웃 기능 매핑
+            const btnLogout = document.getElementById('btn-dropdown-logout');
+            if (btnLogout) {
+                btnLogout.addEventListener('click', () => {
+                    fetch('/api/logout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/login';
+                        }
+                    })
+                    .catch(err => console.error('로그아웃 에러:', err));
+                });
+            }
+
+            // 3. 계정 설정 모달 열기 매핑 (드롭다운 내 버튼 클릭 시)
+            const btnChangeCreds = document.getElementById('btn-change-credentials');
+            if (btnChangeCreds) {
+                btnChangeCreds.addEventListener('click', () => {
+                    // 드롭다운 숨기기
+                    if (dropdownMenu) dropdownMenu.classList.remove('show');
+                    
+                    // 대시보드 스크립트에 바인딩된 모달 오픈 기능 호출
+                    const openModalFn = window.openChangePwModal;
+                    if (typeof openModalFn === 'function') {
+                        openModalFn();
+                    } else {
+                        // 만약 대시보드가 아닌 기기 상세페이지 등인 경우 대시보드로 이동하거나, 세션 상태를 저장해 오픈
+                        // 여기서는 대시보드에서만 작동하도록 처리하거나, 기기 상세페이지에서도 대시보드로 리다이렉트하여 띄우도록 가이드
+                        window.location.href = '/dashboard?openSettings=true';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

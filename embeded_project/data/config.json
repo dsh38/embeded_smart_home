@@ -1,0 +1,18 @@
+{
+    "user": {
+        "username": "admin",
+        "password_hash": "pbkdf2:sha256:1000000$lrS3eDIv6zJTcSnI$9769ff633a4132a9025fa3da1f5f0da2b535ab83dafb2b7d6c9e66ae65ef5f2b"
+    },
+    "devices": [
+        {
+            "id": 1,
+            "brand": "lg",
+            "name": "홈 에어컨",
+            "device_type": "air_conditioner",
+            "is_active": false,
+            "mode": "cool",
+            "target_temp": 24,
+            "fan_speed": "high"
+        }
+    ]
+}

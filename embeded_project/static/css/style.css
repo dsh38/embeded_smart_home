@@ -1,0 +1,1316 @@
+/* ==========================================================================
+   스마트홈 IoT 시스템 프리미엄 스타일시트 (style.css - v3 개편)
+   ========================================================================== */
+
+/* 1. 디자인 시스템 토큰 및 변수 (듀얼 테마 지원 - 화이트 기본) */
+:root {
+    /* 기본값: 화이트(라이트) 테마 변수 */
+    --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+    --panel-bg: rgba(255, 255, 255, 0.7);
+    --panel-border: rgba(148, 163, 184, 0.25);
+    --panel-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.15);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    --primary-color: #4f46e5; /* Indigo */
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    --accent-color: #0891b2;  /* Cyan */
+    --accent-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+    
+    --power-on-color: #059669;  /* Emerald */
+    --power-off-color: #dc2626; /* Red */
+    
+    --input-bg: rgba(255, 255, 255, 0.95);
+    --input-border: rgba(148, 163, 184, 0.4);
+    --input-focus-border: #4f46e5;
+    
+    --card-hover-border: rgba(79, 70, 229, 0.4);
+    --card-glow: 0 0 15px rgba(79, 70, 229, 0.1);
+}
+
+/* 다크 테마 클래스 변수 (클래스 부여 시 오버라이드) */
+.dark-theme {
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+    --panel-bg: rgba(30, 41, 59, 0.5);
+    --panel-border: rgba(255, 255, 255, 0.08);
+    --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    --primary-color: #6366f1;
+    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    --accent-color: #06b6d4;
+    --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    
+    --power-on-color: #10b981;
+    --power-off-color: #ef4444;
+    
+    --input-bg: rgba(15, 23, 42, 0.6);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --input-focus-border: #6366f1;
+    
+    --card-hover-border: rgba(99, 102, 241, 0.4);
+    --card-glow: 0 0 15px rgba(99, 102, 241, 0.15);
+}
+
+/* 2. 전역 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Outfit', 'Pretendard', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* 3. 레이아웃 구조 */
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* 상단 헤더 */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px;
+    box-shadow: var(--panel-shadow);
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 100; /* 헤더 레이어가 실시간 온습도보다 높도록 제어 */
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 1.6rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* 3-1. 내 계정 드롭다운 UI 개편 */
+.my-account-dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.dropdown-toggle:hover {
+    border-color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    width: 170px;
+    box-shadow: var(--panel-shadow);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 6px;
+    display: none; /* 기본 숨김 */
+    flex-direction: column;
+    gap: 4px;
+    z-index: 1000; /* 실시간 온습도 게이지를 가리지 않도록 z-index를 최상위로 설정 */
+    animation: zoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dropdown-menu.show {
+    display: flex;
+}
+
+.dropdown-item {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    transition: all 0.15s ease;
+}
+
+.dropdown-item:hover {
+    background: var(--primary-gradient);
+    color: #ffffff;
+}
+
+.dropdown-item.danger-item:hover {
+    background: var(--power-off-color);
+    color: #ffffff;
+}
+
+/* 메인 공간 */
+.app-main {
+    flex: 1;
+    margin-bottom: 24px;
+}
+
+/* 하단 푸터 */
+.app-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 16px;
+    box-shadow: var(--panel-shadow);
+}
+
+.theme-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.theme-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.theme-toggle-wrapper {
+    display: flex;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    padding: 4px;
+    border-radius: 30px;
+}
+
+.theme-toggle-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn.active {
+    background: var(--primary-gradient);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.footer-info {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   4. 컴포넌트 & 스타일 패턴
+   ========================================================================== */
+
+/* Glassmorphism 기본 패널 */
+.glass-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 20px;
+    box-shadow: var(--panel-shadow);
+    padding: 24px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+/* 버튼 컴포넌트 */
+button {
+    cursor: pointer;
+    outline: none;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    filter: brightness(1.08);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--input-border);
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--text-secondary);
+}
+
+.btn-icon-link {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-icon-link:hover {
+    color: var(--power-off-color);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-danger-glass {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: var(--power-off-color);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-danger-glass:hover {
+    background: var(--power-off-color);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+}
+
+/* 모달 인라인 변경 버튼 */
+.btn-inline-change {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--primary-color);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 10px;
+    transition: all 0.2s;
+}
+
+.btn-inline-change:hover {
+    background: var(--primary-gradient);
+    color: #ffffff;
+}
+
+/* 4-1. 대시보드 카드 간편 전원 제어용 버튼 디자인 스타일링 */
+.card-bottom-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-quick-power {
+    border: none;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btn-quick-power.on {
+    background: var(--power-on-color);
+    color: #ffffff;
+}
+
+.btn-quick-power.on:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
+}
+
+.btn-quick-power.off {
+    background: var(--power-off-color);
+    color: #ffffff;
+}
+
+.btn-quick-power.off:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+.btn-quick-power:active {
+    transform: translateY(0);
+}
+
+/* 입력 필드 (Input, Select) */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.input-group input[type="text"],
+.input-group input[type="password"],
+.input-group input[type="number"],
+.input-group select {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.25s ease;
+    width: 100%;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+}
+
+/* 읽기전용 아이디 표시 구역 */
+.current-id-display {
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.current-id-val {
+    flex-1: 1;
+    color: var(--text-primary);
+}
+
+/* 알림 박스 */
+.alert-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    border-left: 4px solid transparent;
+}
+
+.error-alert {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--power-off-color);
+    border-left-color: var(--power-off-color);
+}
+
+.success-alert {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--power-on-color);
+    border-left-color: var(--power-on-color);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   5. 페이지 상세 스타일
+   ========================================================================== */
+
+/* 5-1. 로그인 화면 */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 0;
+}
+
+.login-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 24px;
+    box-shadow: var(--panel-shadow);
+    padding: 40px;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+}
+
+.login-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.login-header p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+}
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.btn-toggle-eye {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.btn-toggle-eye:hover {
+    color: var(--text-secondary);
+}
+
+.form-options {
+    display: flex;
+    margin-bottom: 24px;
+}
+
+/* 체크박스 커스터마이징 */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    user-select: none;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+    border-color: var(--text-secondary);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background: var(--primary-gradient);
+    border-color: var(--primary-color);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* 5-2. 대시보드 화면 */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 12px;
+}
+
+.section-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.refresh-indicator {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    background: rgba(6, 182, 212, 0.1);
+    padding: 4px 10px;
+    border-radius: 30px;
+    font-weight: 600;
+}
+
+/* 온습도 센서 레이아웃 */
+.sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.sensor-card {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.3s ease;
+}
+
+.sensor-card:hover {
+    transform: translateY(-2px);
+}
+
+.sensor-icon-wrapper {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.temp-card .sensor-icon-wrapper {
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary-color);
+}
+
+.humi-card .sensor-icon-wrapper {
+    background: rgba(8, 145, 178, 0.1);
+    color: var(--accent-color);
+}
+
+.sensor-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.sensor-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.sensor-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.sensor-value .unit {
+    font-size: 1rem;
+    margin-left: 2px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+/* 기기 그리드 */
+.devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.device-card {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 16px;
+    padding: 22px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 180px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.device-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--card-hover-border);
+    box-shadow: var(--card-glow);
+}
+
+.device-card.active {
+    border-color: rgba(5, 150, 105, 0.3);
+    box-shadow: 0 0 15px rgba(5, 150, 105, 0.08);
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.device-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+}
+
+.device-title h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.device-brand {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.brand-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.brand-badge.samsung {
+    background: rgba(79, 70, 229, 0.15);
+    color: #4338ca;
+}
+
+.brand-badge.lg {
+    background: rgba(220, 38, 38, 0.15);
+    color: #b91c1c;
+}
+
+.state-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.state-badge.on {
+    background: rgba(5, 150, 105, 0.12);
+    color: var(--power-on-color);
+}
+
+.state-badge.off {
+    background: rgba(220, 38, 38, 0.12);
+    color: var(--power-off-color);
+}
+
+.card-middle {
+    margin-bottom: 20px;
+}
+
+.status-summary-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.summary-item i {
+    color: var(--text-muted);
+}
+
+.card-bottom {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 12px;
+}
+
+/* 로딩 & 빈 상태 */
+.loading-state, .empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.loading-state i {
+    font-size: 2.2rem;
+    color: var(--primary-color);
+    margin-bottom: 16px;
+}
+
+.loading-state p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.empty-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.empty-state h4 {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+}
+
+.empty-state p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 320px;
+    margin-bottom: 24px;
+}
+
+/* 5-3. 기기 상세 화면 */
+.detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.navigation-bar {
+    text-align: left;
+}
+
+.btn-back {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+}
+
+.btn-back:hover {
+    color: var(--text-primary);
+}
+
+.device-detail-card {
+    position: relative;
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.brand-badge-wrapper {
+    font-size: 1.8rem;
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-badge-wrapper.samsung {
+    background: rgba(79, 70, 229, 0.15);
+    color: #4f46e5;
+}
+
+.brand-badge-wrapper.lg {
+    background: rgba(220, 38, 38, 0.15);
+    color: #dc2626;
+}
+
+.device-meta {
+    flex: 1;
+    text-align: left;
+}
+
+.device-meta h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.device-status-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.device-status-badge.on {
+    background: rgba(5, 150, 105, 0.15);
+    color: var(--power-on-color);
+}
+
+.device-status-badge.off {
+    background: rgba(220, 38, 38, 0.15);
+    color: var(--power-off-color);
+}
+
+.power-toggle-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.power-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* 스위치 슬라이더 커스텀 */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    transition: .3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+}
+
+input:checked + .slider {
+    background: var(--primary-gradient);
+    border-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* 실시간 상세 정보 블럭 */
+.detail-info-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.info-block {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.info-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.summary-val {
+    color: var(--accent-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 하이브리드 온도 조절기 */
+.temp-hybrid-input {
+    display: flex;
+    gap: 10px;
+}
+
+.temp-hybrid-input input[type="number"] {
+    flex: 1;
+}
+
+.temp-hybrid-input select {
+    width: 130px;
+}
+
+.fan-mode-notice {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    background: rgba(8, 145, 178, 0.08);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 6px;
+}
+
+.validation-error-msg {
+    font-size: 0.8rem;
+    color: var(--power-off-color);
+    background: rgba(220, 38, 38, 0.08);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 6px;
+    font-weight: 600;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.lg-only-notice {
+    color: var(--text-muted);
+}
+
+.control-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 20px;
+}
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: var(--panel-border);
+    margin: 30px 0;
+}
+
+.danger-zone {
+    border: 1px dashed rgba(220, 38, 38, 0.3);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: left;
+}
+
+.danger-zone h5 {
+    color: var(--power-off-color);
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.danger-zone p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   6. 모달 다이얼로그 (Overlay, Animation)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--panel-bg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 12px;
+}
+
+.modal-header h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.btn-close-modal:hover {
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 16px;
+}
+
+.btn-text-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.btn-text-btn:hover {
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* 7. 미세 애니메이션 */
+.animate-zoom {
+    animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 미디어 쿼리 (모바일 세부 대응) */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 10px;
+    }
+    .glass-panel {
+        padding: 16px;
+    }
+    .app-header {
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+    .sensor-grid {
+        grid-template-columns: 1fr;
+    }
+    .detail-info-row {
+        grid-template-columns: 1fr;
+    }
+    .temp-hybrid-input {
+        flex-direction: column;
+    }
+    .temp-hybrid-input select {
+        width: 100%;
+    }
+}

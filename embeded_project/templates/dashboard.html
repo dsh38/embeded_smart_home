@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- 1. 실시간 온습도 센서 모니터링 섹션 -->
+    <section class="sensor-section glass-panel">
+        <div class="section-header">
+            <h3><i class="fa-solid fa-square-poll-vertical"></i> 실시간 실내 온습도 (DHT22)</h3>
+            <span class="refresh-indicator" id="refresh-badge">
+                <i class="fa-solid fa-spinner fa-spin"></i> 10초마다 자동 갱신
+            </span>
+        </div>
+        <div class="sensor-grid">
+            <div class="sensor-card temp-card">
+                <div class="sensor-icon-wrapper">
+                    <i class="fa-solid fa-thermometer-half"></i>
+                </div>
+                <div class="sensor-info">
+                    <span class="sensor-label">현재 온도</span>
+                    <h2 class="sensor-value"><span id="sensor-temp">--.-</span><span class="unit">°C</span></h2>
+                </div>
+            </div>
+            <div class="sensor-card humi-card">
+                <div class="sensor-icon-wrapper">
+                    <i class="fa-solid fa-droplet"></i>
+                </div>
+                <div class="sensor-info">
+                    <span class="sensor-label">현재 습도</span>
+                    <h2 class="sensor-value"><span id="sensor-humi">--.-</span><span class="unit">%</span></h2>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. 등록 기기 제어 대시보드 섹션 -->
+    <section class="devices-section glass-panel">
+        <div class="section-header">
+            <h3><i class="fa-solid fa-cubes"></i> 등록된 스마트 가전 목록</h3>
+            <button id="btn-open-register" class="btn-secondary btn-sm">
+                <i class="fa-solid fa-plus"></i> 신규 기기 등록
+            </button>
+        </div>
+
+        <!-- 기기 카드 컨테이너 (JS에서 기기 목록 렌더링) -->
+        <div class="devices-grid" id="devices-container">
+            <!-- 로딩 플레이스홀더 -->
+            <div class="loading-state">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>가전 정보를 로드하는 중입니다...</p>
+            </div>
+        </div>
+
+        <!-- 등록된 기기가 없을 때 활성화되는 빈 상태 영역 -->
+        <div id="no-devices-state" class="empty-state hidden">
+            <div class="empty-icon-wrapper">
+                <i class="fa-solid fa-wind"></i>
+            </div>
+            <h4>등록된 가전 기기가 없습니다.</h4>
+            <p>아래 버튼을 눌러 거실이나 침실의 에어컨을 등록하고 제어를 시작해보세요.</p>
+            <button id="btn-empty-register" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> 첫 기기 추가하기
+            </button>
+        </div>
+    </section>
+</div>
+
+<!-- ============================================== -->
+<!-- 모달 창: 1. 신규 기기 등록 모달 -->
+<!-- ============================================== -->
+<div id="modal-register-device" class="modal-overlay hidden">
+    <div class="modal-card glass-panel animate-zoom">
+        <div class="modal-header">
+            <h4><i class="fa-solid fa-circle-plus"></i> 스마트 에어컨 등록</h4>
+            <button class="btn-close-modal" onclick="closeModal('modal-register-device')">&times;</button>
+        </div>
+        <form id="register-device-form" class="modal-form">
+            <div class="input-group">
+                <label for="reg-brand">가전 브랜드 선택</label>
+                <select id="reg-brand" name="brand" required>
+                    <option value="" disabled selected>제조사를 선택해 주세요</option>
+                    <option value="samsung">삼성 전자 (Samsung)</option>
+                    <option value="lg">LG 휘센 (LG Electronics)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="reg-name">기기 별칭 (명칭)</label>
+                <input type="text" id="reg-name" name="name" placeholder="예: 거실 에어컨, 안방 에어컨" required>
+            </div>
+            
+            <div id="reg-error-message" class="alert-box error-alert hidden">
+                <i class="fa-solid fa-circle-info"></i> <span class="alert-text">오류</span>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-text-btn" onclick="closeModal('modal-register-device')">취소</button>
+                <button type="submit" class="btn-primary">기기 추가</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- 모달 창: 2. 관리자 ID/비밀번호 정보 변경 모달 (UI 흐름 고도화) -->
+<!-- ============================================== -->
+<div id="modal-change-password" class="modal-overlay hidden">
+    <div class="modal-card glass-panel animate-zoom">
+        <div class="modal-header">
+            <h4><i class="fa-solid fa-key"></i> 관리자 계정 정보 수정</h4>
+            <button class="btn-close-modal" onclick="closeModal('modal-change-password')">&times;</button>
+        </div>
+        <form id="change-pw-form" class="modal-form">
+            <!-- 현재 로그인 계정명 표시 영역 -->
+            <div class="input-group">
+                <label><i class="fa-solid fa-user-tag"></i> 현재 로그인 아이디</label>
+                <div class="current-id-display">
+                    <span id="current-username-text" class="current-id-val">{{ session.get('username') }}</span>
+                    <button type="button" id="btn-enable-username-edit" class="btn-inline-change">아이디 변경</button>
+                </div>
+            </div>
+            
+            <!-- 아이디 변경 활성화 시 노출되는 새 아이디 입력창 -->
+            <div class="input-group hidden animate-zoom" id="new-username-input-group">
+                <label for="new-username"><i class="fa-solid fa-user-plus"></i> 새로운 아이디</label>
+                <input type="text" id="new-username" name="new_username" placeholder="새 아이디 입력" value="{{ session.get('username') }}">
+            </div>
+            
+            <!-- 3단계 비밀번호 입력 양식 -->
+            <div class="input-group">
+                <label for="current-password"><i class="fa-solid fa-lock"></i> 현재 비밀번호</label>
+                <input type="password" id="current-password" name="current_password" placeholder="현재 비밀번호 입력" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="new-password"><i class="fa-solid fa-key"></i> 새로운 비밀번호</label>
+                <input type="password" id="new-password" name="new_password" placeholder="새 비밀번호 입력" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="confirm-password"><i class="fa-solid fa-check-double"></i> 새로운 비밀번호 확인</label>
+                <input type="password" id="confirm-password" name="confirm_password" placeholder="새 비밀번호 재입력" required>
+            </div>
+            
+            <div id="pw-error-message" class="alert-box error-alert hidden">
+                <i class="fa-solid fa-circle-info"></i> <span class="alert-text">오류</span>
+            </div>
+            <div id="pw-success-message" class="alert-box success-alert hidden">
+                <i class="fa-solid fa-circle-check"></i> <span class="alert-text">변경 성공</span>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-text-btn" onclick="closeModal('modal-change-password')">닫기</button>
+                <button type="submit" class="btn-primary">정보 저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

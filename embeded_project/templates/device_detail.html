@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="detail-container">
+    <!-- 뒤로가기 링크 버튼 -->
+    <div class="navigation-bar">
+        <a href="/dashboard" class="btn-back"><i class="fa-solid fa-chevron-left"></i> 대시보드로 돌아가기</a>
+    </div>
+
+    <!-- 기기 상세 제어 카드 -->
+    <div class="device-detail-card glass-panel" id="detail-card">
+        <!-- 로딩 인디케이터 -->
+        <div class="loading-state" id="detail-loading">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>기기 상태 정보를 가져오는 중입니다...</p>
+        </div>
+
+        <div class="detail-content hidden" id="detail-content-area">
+            <!-- 1. 기기 기본 타이틀 헤더 -->
+            <div class="detail-header">
+                <div class="brand-badge-wrapper" id="device-brand-badge">
+                    <!-- JS에서 브랜드 아이콘 주입 -->
+                </div>
+                <div class="device-meta">
+                    <h2 id="device-name">에어컨</h2>
+                    <span class="device-status-badge off" id="device-power-badge">전원 꺼짐</span>
+                </div>
+                <div class="power-toggle-section">
+                    <label class="switch">
+                        <input type="checkbox" id="device-power-switch">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="power-label">전원 제어</span>
+                </div>
+            </div>
+
+            <!-- 2. 상세 정보 영역 (현재 실내 온습도 및 제어 상태 요약) -->
+            <div class="detail-info-row">
+                <div class="info-block">
+                    <span class="info-label"><i class="fa-solid fa-thermometer"></i> 실내 온도</span>
+                    <span class="info-val" id="detail-room-temp">--.- °C</span>
+                </div>
+                <div class="info-block">
+                    <span class="info-label"><i class="fa-solid fa-droplet"></i> 실내 습도</span>
+                    <span class="info-val" id="detail-room-humi">--.- %</span>
+                </div>
+                <div class="info-block">
+                    <span class="info-label"><i class="fa-solid fa-wind"></i> 설정 상태</span>
+                    <span class="info-val summary-val" id="detail-setting-summary">대기 중</span>
+                </div>
+            </div>
+
+            <!-- 3. 설정 폼 제어 섹션 -->
+            <form id="device-control-form" class="control-form">
+                <!-- 3-1. 운전 모드 (리스트박스/셀렉트박스) -->
+                <div class="input-group">
+                    <label for="ctrl-mode"><i class="fa-solid fa-circle-nodes"></i> 운전 모드 설정</label>
+                    <select id="ctrl-mode" name="mode">
+                        <option value="cool">냉방</option>
+                        <option value="dry">제습</option>
+                        <option value="fan">송풍</option>
+                        <option value="heat">난방</option>
+                    </select>
+                </div>
+
+                <!-- 3-2. 희망 온도 설정 (사용자 직접 입력 + 리스트 박스 하이브리드) -->
+                <div class="input-group" id="temp-control-group">
+                    <label for="ctrl-temp"><i class="fa-solid fa-temperature-arrow-up"></i> 희망 온도 (°C)</label>
+                    <div class="temp-hybrid-input">
+                        <!-- 직접 입력 필드 -->
+                        <input type="number" id="ctrl-temp" name="target_temp" placeholder="18~30" min="18" max="30" step="1">
+                        <!-- 빠른 선택 리스트박스 -->
+                        <select id="ctrl-temp-select">
+                            <option value="">온도 선택</option>
+                            <option value="18">18 °C (최저)</option>
+                            <option value="19">19 °C</option>
+                            <option value="20">20 °C</option>
+                            <option value="21">21 °C</option>
+                            <option value="22">22 °C</option>
+                            <option value="23">23 °C</option>
+                            <option value="24">24 °C (쾌적)</option>
+                            <option value="25">25 °C</option>
+                            <option value="26">26 °C</option>
+                            <option value="27">27 °C</option>
+                            <option value="28">28 °C</option>
+                            <option value="29">29 °C</option>
+                            <option value="30">30 °C (최고)</option>
+                        </select>
+                    </div>
+                    <small class="helper-text">18°C ~ 30°C 범위 내에서 숫자 형태로 설정해 주세요.</small>
+                    <!-- 송풍(fan) 모드 시 알림 문구 -->
+                    <span class="fan-mode-notice hidden" id="fan-notice">
+                        <i class="fa-solid fa-circle-exclamation"></i> 송풍(Fan) 운전 시에는 온도 조절 기능이 작동하지 않습니다.
+                    </span>
+                    
+                    <!-- 잘못 입력 시 에러 표시 영역 -->
+                    <div id="temp-error" class="validation-error-msg hidden">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 온도를 잘못 입력하였습니다. (18°C ~ 30°C 범위 숫자 입력 필요)
+                    </div>
+                </div>
+
+                <!-- 3-3. 바람세기 설정 (리스트박스/셀렉트박스) -->
+                <div class="input-group" id="speed-control-group">
+                    <label for="ctrl-speed"><i class="fa-solid fa-fan"></i> 바람 세기 설정</label>
+                    <select id="ctrl-speed" name="fan_speed">
+                        <option value="high">강풍</option>
+                        <option value="medium">중풍</option>
+                        <option value="low">약풍</option>
+                        <option value="auto">자동</option>
+                    </select>
+                    <small class="helper-text lg-only-notice hidden" id="lg-speed-notice">
+                        <i class="fa-solid fa-circle-info"></i> LG 에어컨은 제조사 프로토콜 제한상 강풍으로 자동 고정 송출됩니다.
+                    </small>
+                </div>
+
+                <!-- API 결과 성공/에러 피드백 알림바 -->
+                <div id="control-alert" class="alert-box hidden">
+                    <i class="alert-icon fa-solid"></i>
+                    <span class="alert-text">성공/실패 피드백</span>
+                </div>
+
+                <!-- 4. 하단 버튼 영역 (확인 / 취소) -->
+                <div class="control-actions">
+                    <button type="button" id="btn-cancel" class="btn-text-btn">취소 (이전 화면)</button>
+                    <button type="submit" id="btn-submit" class="btn-primary">
+                        <i class="fa-solid fa-circle-check"></i> 설정 적용
+                    </button>
+                </div>
+            </form>
+
+            <hr class="divider">
+
+            <!-- 위험 구역: 기기 삭제 -->
+            <div class="danger-zone">
+                <h5>위험 구역 (Danger Zone)</h5>
+                <p>등록된 가전 기기를 시스템에서 영구히 삭제합니다.</p>
+                <button type="button" id="btn-delete-device" class="btn-danger-glass">
+                    <i class="fa-solid fa-trash-can"></i> 이 기기 삭제하기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Flask 주입 변수를 전역 JS 변수로 캐싱
+    const DEVICE_ID = {{ device_id }};
+</script>
+<script src="{{ url_for('static', filename='js/device.js') }}"></script>
+{% endblock %}
