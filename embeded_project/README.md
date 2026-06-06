@@ -59,7 +59,7 @@ sudo systemctl start pigpiod
 ```
 
 #### ③ DHT.py 모듈 복사
-물리 센서 실측을 완료하기 위해서는, 동봉된 **`DHT.py`** (pigpio 연동 온습도 전용 라이브러리) 스크립트 파일을 **본 프로젝트 폴더 루트 경로**(`D:\Antigravity_Project\embeded_project\`) 바로 아래에 배치해 주십시오.
+물리 센서 실측을 완료하기 위해서는, 동봉된 **`DHT.py`** (pigpio 연동 온습도 전용 라이브러리) 스크립트 파일을 **본 프로젝트 폴더 루트 경로** 바로 아래에 배치해 주십시오.
 
 ---
 
