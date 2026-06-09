@@ -64,36 +64,94 @@ class UniversalACTransmitter:
         return pulses
 
     def send_raw_signal(self, time_list):
-        """마이크로초(us) 타이밍 리스트를 실제 IR 캐리어 신호로 묶어 송출"""
+        """마이크로초(us) 타이밍 리스트를 wave_chain으로 쪼개서 송출 (pigpiod 크래시 방지)"""
+        # pigpio 데몬 연결 확인 및 필요시 자동 재연결 시도
+        if self.pi and not self.pi.connected:
+            print("⚠️ [IR 물리] pigpiod 데몬과의 연결이 유실되었습니다. 재연결을 시도합니다...")
+            try:
+                self.pi.stop()
+            except Exception:
+                pass
+            try:
+                self.pi = pigpio.pi()
+                if self.pi.connected:
+                    self.pi.set_mode(self.pin, pigpio.OUTPUT)
+                    print("✅ [IR 물리] pigpiod 데몬 재연결 성공!")
+                else:
+                    self.pi = None
+                    print("❌ [IR 물리] pigpiod 데몬 재연결 실패.")
+            except Exception as re_err:
+                self.pi = None
+                print(f"❌ [IR 물리] pigpiod 데몬 재연결 중 예외 발생: {str(re_err)}")
+
         if not self.pi:
             print(f"📺 [IR 시뮬레이터] IR 파형 송출 (타이밍 개수: {len(time_list)})")
             return True
 
         try:
+            # 송출 중이면 완료될 때까지 대기
             while self.pi.wave_tx_busy():
                 time.sleep(0.02)
                 
             self.pi.wave_clear()
-            full_pulses = []
+            
+            # 파형 캐시 딕셔너리
+            # 키: (신호종류, rounded_duration), 값: 생성된 wave_id
+            cached_waves = {}
+            chain = []
 
             for idx, duration in enumerate(time_list):
-                if idx % 2 == 0:  # 짝수 인덱스는 Mark (신호 켜짐 + 캐리어 실림)
-                    full_pulses.extend(self._create_carrier_pulse(duration))
-                else:             # 홀수 인덱스는 Space (신호 꺼짐)
-                    full_pulses.append(pigpio.pulse(0, 1 << self.pin, duration))
+                # 타이밍 지터를 줄이고 파형 개수를 최소화하기 위해 50us 단위로 반올림
+                rounded_duration = int(round(duration / 50.0) * 50.0)
+                if rounded_duration <= 0:
+                    rounded_duration = 50 # 최소 지연 보장
+                    
+                is_mark = (idx % 2 == 0)
+                type_key = 'mark' if is_mark else 'space'
+                cache_key = (type_key, rounded_duration)
 
-            self.pi.wave_add_generic(full_pulses)
-            wave_id = self.pi.wave_create()
-            if wave_id >= 0:
-                self.pi.wave_send_once(wave_id)
+                if cache_key not in cached_waves:
+                    self.pi.wave_add_new()
+                    if is_mark:
+                        # 38kHz 캐리어 펄스 생성
+                        actual_cycle_us = 26
+                        cycles = int(rounded_duration / actual_cycle_us)
+                        if cycles <= 0:
+                            cycles = 1
+                        pulses = []
+                        for _ in range(cycles):
+                            pulses.append(pigpio.pulse(1 << self.pin, 0, 13))
+                            pulses.append(pigpio.pulse(0, 1 << self.pin, 13))
+                    else:
+                        # 스페이스 (신호 꺼짐, 단순 지연)
+                        pulses = [pigpio.pulse(0, 0, rounded_duration)]
+                    
+                    self.pi.wave_add_generic(pulses)
+                    wid = self.pi.wave_create()
+                    if wid < 0:
+                        raise Exception(f"wave_create failed: {wid}")
+                    cached_waves[cache_key] = wid
+                
+                # 생성된 wave_id를 체인에 추가
+                chain.append(cached_waves[cache_key])
+
+            # 체인 송출 시작
+            if chain:
+                self.pi.wave_chain(chain)
+                
+                # 송출이 완벽히 완료될 때까지 대기
                 while self.pi.wave_tx_busy():
                     time.sleep(0.01)
-                self.pi.wave_delete(wave_id)
-                print(f"📡 [IR 물리 송출] 펄스 파형 송출 성공 (wave_id: {wave_id})")
-                return True
-            else:
-                print("❌ IR wave_create 실패!")
-                return False
+                    
+            # 사용이 완료된 모든 파형 자원 삭제 (메모리 누수 방지)
+            for wid in cached_waves.values():
+                try:
+                    self.pi.wave_delete(wid)
+                except Exception:
+                    pass
+                    
+            print(f"📡 [IR 물리 송출] wave_chain 파형 송출 성공 (타이밍 개수: {len(time_list)}, 생성된 파형 수: {len(cached_waves)})")
+            return True
         except Exception as e:
             print(f"❌ IR 물리 송출 실패: {str(e)}")
             return False

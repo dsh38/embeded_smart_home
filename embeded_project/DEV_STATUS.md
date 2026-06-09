@@ -79,7 +79,9 @@ embeded_project/
 * [x] **도메인 기본값 해제 및 포트 추가**: `config.py` 내 `SYSTEM_URL = None` 및 `PORT = 5000` 설정 완료
 * [x] **공인/로컬 IP 자동 탐색 및 포트 결합**: `app.py` 내 `get_system_address()` 및 IP 뒤 포트 자동 표출 구현 완료
 * [x] **1602 LCD 긴 접속 주소 좌우 스크롤(Marquee) 구현**: 16자 초과 주소 스크롤 렌더링 및 가독성 최적화 타이밍 적용 완료
-* [x] **Flask 디버그 모드 리로더 스레드 이중 기동 방지**: `app.debug = True` 사전 설정을 통한 스레드 동기화 안정성 확보 완료
+* [x] **Flask 디버그 모드 리로더 스레드 이중 기동 방지**: `app.debug = Config.DEBUG` 적용 및 디버그 스레드 안정성 확보 완료
+* [x] **삼성 에어컨 IR 송출 pigpiod 크래시 방지**: 38kHz 변조 펄스를 50us 반올림 및 고유 웨이브폼 ID 캐싱 후 wave_chain 분할 송출로 우회 완료
+* [x] **pigpiod 데몬 소켓 자동 재연결**: 연결 해제 시 송출 전 자동 통신 소켓 복구 및 GPIO 재초기화 구조 적용 완료
 * [x] **가상 LCD 시뮬레이터 실시간 반영 개선**: Line 2 업데이트 시에도 콘솔 렌더링이 트리거되도록 수정 완료
 * [x] **GitHub 배포 매뉴얼**: 하드웨어 배선 및 기동 매뉴얼 [README.md](README.md) 작성 완료
 * [x] **개발 히스토리 보고서**: 초안에서부터 v8에 이르는 상세 아키텍처 변경 이력서 [HISTORY.md](HISTORY.md) 작성 완료
